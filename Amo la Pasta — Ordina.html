@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Amo la Pasta — Ordina</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,700;1,700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1A5C2E;--gold:#C5A34A;--bg:#FAF7F0;--dim:#888;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:#1a1a1a;font-family:'Rajdhani',sans-serif;min-height:100vh;}
+.header{background:var(--g);padding:16px 20px;text-align:center;}
+.h-brand{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;font-style:italic;color:white;}
+.h-brand span{color:var(--gold);}
+.h-sub{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-top:4px;}
+.screen{display:none;max-width:480px;margin:0 auto;}
+.screen.active{display:block;}
+.pin-wrap{padding:24px 20px;}
+.pin-card{background:white;border-radius:12px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.06);}
+.pin-title{font-size:22px;font-weight:700;color:var(--g);}
+.pin-sub{font-size:13px;color:var(--dim);margin:6px 0 20px;}
+.pin-input-big{width:100%;background:var(--bg);border:2px solid rgba(26,92,46,.2);border-radius:8px;padding:16px;font-size:22px;font-weight:900;letter-spacing:.25em;text-align:center;text-transform:uppercase;outline:none;}
+.pin-input-big:focus{border-color:var(--g);}
+.pin-btn{width:100%;background:var(--g);color:white;border:none;border-radius:8px;padding:14px;font-weight:700;cursor:pointer;margin-top:12px;}
+.pin-error{background:#fdf0ef;border:1px solid #e74c3c;border-radius:6px;padding:10px;font-size:13px;color:#c0392b;margin-top:10px;display:none;}
+.nit-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center;}
+.nit-modal.open{display:flex;}
+.nit-card{background:white;border-radius:16px;padding:24px;width:90%;max-width:360px;}
+.nit-card h3{font-size:18px;color:var(--g);margin-bottom:8px;}
+.nit-input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin:12px 0;font-size:16px;}
+.order-inner{padding-bottom:130px;}
+.welcome{background:linear-gradient(135deg,var(--g),#0a2e14);padding:14px 20px;display:flex;align-items:center;gap:12px;}
+.w-avatar{width:42px;height:42px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.w-name{font-size:15px;font-weight:700;color:white;}
+.w-pin{font-size:10px;color:rgba(255,255,255,.55);}
+.volume-badge{background:rgba(197,163,74,.2);border:1px solid rgba(197,163,74,.4);border-radius:100px;padding:2px 10px;font-size:10px;font-weight:700;color:var(--gold);margin-left:10px;}
+.cat-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--dim);padding:14px 20px 6px;}
+.prod-card{background:white;margin:0 12px 10px;border-radius:10px;border:1px solid rgba(0,0,0,.07);}
+.pc-header{padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(0,0,0,.05);}
+.pc-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;}
+.pc-desc{font-size:11px;color:var(--dim);}
+.pc-items{padding:8px 16px;}
+.pc-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.04);}
+.pc-item:last-child{border:none;}
+.pi-name{font-size:14px;font-weight:600;}
+.pi-price{font-size:14px;font-weight:700;min-width:70px;text-align:right;}
+.old-price{font-size:11px;color:var(--dim);text-decoration:line-through;margin-right:6px;}
+.qty-ctrl{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:100px;padding:4px 8px;}
+.qty-btn{width:26px;height:26px;border-radius:50%;border:none;background:var(--g);color:white;font-size:16px;font-weight:700;cursor:pointer;}
+.qty-val{font-size:15px;font-weight:700;min-width:20px;text-align:center;}
+.riepilogo{background:white;margin:0 12px 10px;border-radius:10px;padding:16px;}
+.rie-title{font-size:12px;font-weight:700;color:var(--dim);margin-bottom:12px;}
+.rie-item{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}
+.rie-item.total{font-size:16px;font-weight:700;border-top:1px solid rgba(0,0,0,.08);padding-top:10px;margin-top:6px;}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid rgba(0,0,0,.1);padding:12px 16px;display:none;z-index:50;}
+.bottom-bar.show{display:block;}
+.bottom-info{display:flex;justify-content:space-between;margin-bottom:10px;}
+.bi-total{font-size:20px;font-weight:700;color:var(--g);}
+.btn-ordina{width:100%;background:var(--g);color:white;border:none;border-radius:8px;padding:14px;font-weight:700;cursor:pointer;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:16px 16px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:24px 20px 32px;}
+.modal-title{font-size:22px;font-weight:700;color:var(--g);}
+.f-group{margin-bottom:14px;}
+.f-label{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--dim);margin-bottom:5px;}
+.f-input{width:100%;background:var(--bg);border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:11px 14px;font-size:15px;outline:none;}
+.f-input:focus{border-color:var(--g);}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pay-methods{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.pay-method{background:var(--bg);border:2px solid rgba(0,0,0,.08);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.pay-method.selected{border-color:var(--g);}
+.pm-check{margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;}
+.pay-method.selected .pm-check{background:var(--g);border-color:var(--g);color:white;}
+.btn-confirm{width:100%;background:var(--g);color:white;border:none;border-radius:10px;padding:15px;font-weight:700;cursor:pointer;}
+.btn-cancel-modal{width:100%;background:transparent;color:var(--dim);border:1px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;cursor:pointer;margin-top:8px;}
+.success-screen{display:none;position:fixed;inset:0;background:white;z-index:300;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;}
+.success-screen.show{display:flex;}
+.s-icon{font-size:72px;margin-bottom:16px;}
+.s-title{font-size:28px;font-weight:700;color:var(--g);}
+.s-sub{font-size:14px;color:var(--dim);margin:12px 0;max-width:320px;}
+.btn-nuovo-ord{background:var(--g);color:white;border:none;border-radius:8px;padding:14px 32px;font-weight:700;cursor:pointer;margin-top:16px;}
+.admin-btn{position:fixed;top:70px;right:12px;background:rgba(26,92,46,.1);border:1px solid rgba(26,92,46,.3);border-radius:100px;padding:7px 14px;font-size:10px;font-weight:700;color:var(--g);cursor:pointer;z-index:50;}
+.admin-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center;padding:16px;}
+.admin-modal.open{display:flex;}
+.admin-inner{background:white;border-radius:12px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;}
+.admin-header{background:var(--g);padding:16px 20px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;}
+.admin-header h3{font-size:20px;color:white;}
+.admin-close{background:rgba(255,255,255,.15);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer;}
+.admin-body{padding:16px 20px;}
+.admin-add{background:var(--bg);border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:14px;margin-bottom:16px;}
+.admin-add-title{font-size:11px;font-weight:700;color:var(--g);margin-bottom:10px;}
+.admin-add-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.admin-input{background:white;border:1px solid rgba(0,0,0,.1);border-radius:6px;padding:9px 12px;width:100%;outline:none;}
+.admin-add-btn{width:100%;background:var(--g);color:white;border:none;border-radius:6px;padding:10px;cursor:pointer;font-weight:700;}
+.client-table{width:100%;border-collapse:collapse;font-size:12px;}
+.client-table th{background:var(--bg);padding:8px;text-align:left;font-size:10px;color:var(--dim);}
+.client-table td{padding:8px;border-bottom:1px solid rgba(0,0,0,.05);}
+.td-pin{font-family:monospace;font-weight:700;color:var(--g);}
+.td-del{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:16px;}
+.btn-small{background:var(--g);color:white;border:none;border-radius:4px;padding:4px 8px;font-size:10px;cursor:pointer;}
+.volume-input{width:80px;padding:4px;border:1px solid #ddd;border-radius:4px;}
+.save-work-btn{position:fixed;bottom:20px;right:20px;background:#2c3e50;color:white;border:none;border-radius:100px;padding:10px 20px;font-size:11px;font-weight:700;cursor:pointer;z-index:100;}
+
+.pi-photo{width:52px;height:40px;border-radius:6px;object-fit:cover;border:1px solid rgba(0,0,0,.08);cursor:pointer;flex-shrink:0;}
+.pi-photo-empty{width:52px;height:40px;border-radius:6px;border:2px dashed rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;background:rgba(0,0,0,.02);}
+.photo-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.photo-modal.open{display:flex;}
+.photo-modal img{max-width:90vw;max-height:70vh;border-radius:12px;object-fit:contain;}
+.photo-modal-label{color:white;font-size:14px;font-weight:600;}
+.photo-upload-btn{background:white;color:#1A5C2E;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;font-size:14px;}
+.photo-close-btn{background:rgba(255,255,255,.2);color:white;border:none;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:13px;}
+
+.reg-screen{display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1A5C2E,#0a2e14);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.reg-screen.show{display:flex;}
+.reg-card{background:white;border-radius:16px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.reg-title{font-family:Cormorant Garamond,serif;font-size:22px;font-weight:700;font-style:italic;color:#1A5C2E;text-align:center;margin-bottom:4px;}
+.reg-sub{font-size:11px;color:#888;text-align:center;margin-bottom:16px;letter-spacing:.05em;}
+.reg-input{width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:10px;font-family:Montserrat,sans-serif;outline:none;}
+.reg-input:focus{border-color:#1A5C2E;}
+.reg-btn{width:100%;padding:13px;background:#1A5C2E;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif;}
+.reg-pin-result{background:#e8f5e9;border:1px solid #c8e6c9;border-radius:8px;padding:12px;text-align:center;margin-top:12px;display:none;}
+.reg-pin-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.1em;}
+.reg-pin-value{font-size:24px;font-weight:900;color:#1A5C2E;font-family:monospace;letter-spacing:2px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="h-brand">Amo <span>la Pasta</span></div>
+  <div class="h-sub">Sistema Ordini — Cartagena de Indias</div>
+</div>
+
+<!-- SCREEN PIN -->
+<div class="screen active" id="screen-pin">
+  <div class="pin-wrap">
+    <div class="pin-card">
+      <div class="pin-title">Ingresa tu PIN</div>
+      <div class="pin-sub">Introduce el PIN que te proporcionó Giampaolo.</div>
+      <input class="pin-input-big" type="text" id="pin-input" maxlength="9" placeholder="HOT56-01" autocomplete="off" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')checkPin()">
+      <div class="pin-error" id="pin-error">PIN no reconocido. Contacta a Amo la Pasta.</div>
+      <button class="pin-btn" onclick="checkPin()">Verificar PIN →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NIT -->
+<div class="nit-modal" id="nit-modal">
+  <div class="nit-card">
+    <h3>🔐 Verificar NIT</h3>
+    <p style="font-size:13px;color:#666;margin-bottom:12px;">Ingresa tu NIT / Cédula para confirmar tu identidad.</p>
+    <input type="text" class="nit-input" id="nit-input" placeholder="NIT / Cédula" autocomplete="off"
+      onkeydown="if(event.key==='Enter')verifyNit()">
+    <button class="pin-btn" onclick="verifyNit()" style="margin-top:8px;">Confirmar →</button>
+    <div style="margin-top:15px;text-align:center;">
+      <a id="nit-help-link" href="#"
+         style="font-size:12px;color:var(--gold);text-decoration:none;font-weight:600;">
+         ¿No recuerdas tu NIT? Contactar a Giampaolo 💬
+      </a>
+    </div>
+    <button onclick="closeNitModal()" style="margin-top:8px;background:transparent;border:none;color:#888;width:100%;padding:10px;cursor:pointer;">Cancelar</button>
+  </div>
+</div>
+
+<!-- SCREEN CATALOGO -->
+<div class="screen" id="screen-order">
+  <div class="order-inner">
+    <div class="welcome">
+      <div class="w-avatar" id="w-avatar">👤</div>
+      <div>
+        <div class="w-name" id="w-name">—</div>
+        <div class="w-pin" id="w-pin-display">—</div>
+        <div id="volume-badge" class="volume-badge" style="display:none;">🏆 Volumen Premium</div>
+      </div>
+    </div>
+    <div id="catalog"></div>
+    <div class="cat-label">Resumen</div>
+    <div class="riepilogo" id="riepilogo">Selecciona productos</div>
+  </div>
+</div>
+
+<div class="bottom-bar" id="bottom-bar">
+  <div class="bottom-info"><span>Total</span><span class="bi-total" id="bottom-total">COP 0</span></div>
+  <button class="btn-ordina" onclick="openDatiFiscali()">Proceder →</button>
+</div>
+
+<!-- MODAL DATI -->
+<div class="modal-overlay" id="modal-dati">
+  <div class="modal">
+    <div class="modal-title">Confirmar Pedido</div>
+    <div id="modal-dynamic-fields"></div>
+    <div style="font-size:11px;font-weight:700;margin:16px 0 10px;">Tipo de entrega</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      <div class="pay-method" id="del-std" onclick="selectDel('std')"><div style="display:flex;align-items:center;gap:8px;"><span>🚴</span><div><div>Estándar</div><div>24h</div></div><div class="pm-check" id="chk-del-std"></div></div><div style="font-size:11px;color:var(--g);padding-left:36px;">Gratis</div></div>
+      <div class="pay-method" id="del-exp" onclick="selectDel('exp')"><div style="display:flex;align-items:center;gap:8px;"><span>⚡</span><div><div>Express</div><div>15min</div></div><div class="pm-check" id="chk-del-exp"></div></div><div style="font-size:11px;color:#8B6914;padding-left:36px;">+COP 5.000</div></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;margin:16px 0 10px;">Método de pago</div>
+    <div class="pay-methods" id="pay-methods-container"></div>
+    <button class="btn-confirm" onclick="confirmOrdine()">Confirmar →</button>
+    <button class="btn-cancel-modal" onclick="closeModal()">← Volver</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="success-screen">
+  <div class="s-icon">✅</div>
+  <div class="s-title">Pedido Confirmado!</div>
+  <div class="s-sub" id="s-pago-instruc">—</div>
+  <button class="btn-nuovo-ord" onclick="resetOrder()">Nuevo Pedido</button>
+</div>
+
+<button class="admin-btn" onclick="checkAdminAccess()">⚙️ Admin</button>
+<button class="save-work-btn" onclick="exportAllData()">💾 Salvar trabajo</button>
+<input type="file" id="import-file" style="display:none" accept=".json" onchange="importAllData(this)">
+
+<div class="admin-modal" id="admin-modal"><div class="admin-inner"><div class="admin-header"><h3>Admin</h3><button class="admin-close" onclick="closeAdmin()">✕</button></div><div class="admin-body" id="admin-body"></div></div></div>
+
+<script>
+// ===== CATALOGO BASE =====
+const BASE_CATS = {
+  'HOT56':{name:'Hotel 5-6★',avatar:'🏨',cats:[{nome:'GOLD',badge:'⭐',color:'#8B6914',bg:'#FFF8E6',items:[{name:'Spaghetti Gold',desc:'Solo tuorli',formati:[{g:'75g',p:6500},{g:'200g',p:17000}]},{name:'Fettuccine Gold',desc:'Solo tuorli',formati:[{g:'75g',p:6500},{g:'200g',p:17000}]}]}]},
+  'CHF12':{name:'Chef',avatar:'👨‍🍳',cats:[{nome:'ORIGINALE',badge:'🟢',color:'#1A5C2E',bg:'#F0FAF4',items:[{name:'Spaghetti Originale',desc:'Con huevo',formati:[{g:'75g',p:4200},{g:'200g',p:11200}]}]}]},
+  'MED11':{name:'Médico',avatar:'👨‍⚕️',cats:[{nome:'ORIGINALE',badge:'🟢',color:'#1A5C2E',bg:'#F0FAF4',items:[{name:'Spaghetti Originale',desc:'Con huevo',formati:[{g:'75g',p:4950},{g:'200g',p:12600}]}]}]},
+  'CEL14':{name:'Cliente',avatar:'🛒',cats:[{nome:'ORIGINALE',badge:'🟢',color:'#1A5C2E',bg:'#F0FAF4',items:[{name:'Spaghetti Originale',desc:'Con huevo',formati:[{g:'75g',p:5500},{g:'200g',p:14000}]}]}]},
+  'RIV22':{name:'Eduin',avatar:'🏍️',cats:[{nome:'Serenissima',badge:'🔴',color:'#C41E3A',bg:'#FFF0F2',items:[{name:'La Serenissima',desc:'Wholesale',formati:[{g:'75g',p:3000},{g:'200g',p:8000}]}]}]},
+  'RIV22-MED':{name:'Edwin 2',avatar:'🏍️',cats:[{nome:'Serenissima',badge:'🔴',color:'#C41E3A',bg:'#FFF0F2',items:[{name:'La Serenissima',desc:'Wholesale',formati:[{g:'75g',p:3000},{g:'200g',p:8000}]}]}]},
+};
+
+// ===== STORAGE =====
+function getClients(){try{return JSON.parse(localStorage.getItem('amp_clients_nit')||'[]');}catch{return[];}}
+function saveClients(c){localStorage.setItem('amp_clients_nit',JSON.stringify(c));}
+function getOrders(){try{return JSON.parse(localStorage.getItem('amp_orders_nit')||'[]');}catch{return[];}}
+function saveOrders(o){localStorage.setItem('amp_orders_nit',JSON.stringify(o));}
+function getVolumePricing(){try{return JSON.parse(localStorage.getItem('amp_volume_pricing')||'[]');}catch{return[];}}
+function saveVolumePricing(v){localStorage.setItem('amp_volume_pricing',JSON.stringify(v));}
+function getProve(){try{return JSON.parse(localStorage.getItem('amp_prove')||'[]');}catch{return[];}}
+function saveProve(p){localStorage.setItem('amp_prove',JSON.stringify(p));}
+function getMotoRefs(){try{return JSON.parse(localStorage.getItem('amp_moto')||'[]');}catch{return[];}}
+function saveMotoRefs(m){localStorage.setItem('amp_moto',JSON.stringify(m));}
+function getProdottiCustom(){try{return JSON.parse(localStorage.getItem('amp_products')||'[]');}catch{return[];}}
+function saveProdottiCustom(p){localStorage.setItem('amp_products',JSON.stringify(p));}
+function getEdizioni(){try{return JSON.parse(localStorage.getItem('amp_editions')||'[]');}catch{return[];}}
+function saveEdizioni(e){localStorage.setItem('amp_editions',JSON.stringify(e));}
+function getMotoOrders(){try{return JSON.parse(localStorage.getItem('amp_moto_orders')||'{}');}catch{return{};}}
+function saveMotoOrders(m){localStorage.setItem('amp_moto_orders',JSON.stringify(m));}
+
+// ===== UTILITIES =====
+function genPin(catPin){const n=getClients().filter(c=>c.catPin===catPin).length;return catPin+'-'+String(n+1).padStart(2,'0');}
+function calcProviggione(code,totale){if(totale>=5000000)return Math.round(totale*0.15);if(totale>=3000000)return Math.round(totale*0.12);if(totale>=1000000)return Math.round(totale*0.10);return Math.round(totale*0.08);}
+function registraMotoOrder(code,orderId,totale){if(!code)return;const orders=getMotoOrders();const month=new Date().toISOString().slice(0,7);const key=code+'_'+month;if(!orders[key])orders[key]={code,month,totale:0,ordini:0};orders[key].totale+=totale;orders[key].ordini+=1;saveMotoOrders(orders);}
+
+// ===== VOLUME PRICING =====
+function getVolumeDiscount(clientPin, category, productName, formatG){
+  const orders=getOrders();
+  const last4weeks=orders.filter(o=>{
+    return o.pin===clientPin && new Date(o.date) > new Date(Date.now()-28*24*60*60*1000);
+  });
+  const totalKgLast4Weeks=last4weeks.reduce((sum,o)=>{
+    const kg=Object.entries(o.items).reduce((s,[k,v])=>{
+      if(k.includes('200g'))return s+v*0.2;
+      if(k.includes('75g'))return s+v*0.075;
+      return s;
+    },0);
+    return sum+kg;
+  },0);
+  const volumeRules=getVolumePricing().filter(r=>r.clientPin===clientPin && r.category===category);
+  if(volumeRules.length>0){
+    for(let rule of volumeRules){
+      if(totalKgLast4Weeks >= rule.minKg){
+        const itemRule=rule.items?.find(i=>i.productName===productName && i.format===formatG);
+        if(itemRule)return itemRule.discountedPrice;
+      }
+    }
+  }
+  return null;
+}
+
+function checkAndShowVolumeBadge(clientPin){
+  const orders=getOrders();
+  const last4weeks=orders.filter(o=>o.pin===clientPin && new Date(o.date) > new Date(Date.now()-28*24*60*60*1000));
+  let totalKg=0;
+  last4weeks.forEach(o=>{
+    Object.entries(o.items).forEach(([k,v])=>{
+      if(k.includes('200g'))totalKg+=v*0.2;
+      if(k.includes('75g'))totalKg+=v*0.075;
+    });
+  });
+  const volumeRules=getVolumePricing().filter(r=>r.clientPin===clientPin);
+  const hasDiscount=volumeRules.some(r=>totalKg>=r.minKg);
+  const badge=document.getElementById('volume-badge');
+  if(badge){
+    if(hasDiscount){
+      badge.style.display='inline-block';
+      badge.textContent=`🏆 Volumen Premium (${totalKg.toFixed(1)}kg en 4 semanas)`;
+    }else{
+      badge.style.display='none';
+    }
+  }
+}
+
+// ===== STATO =====
+let curClient=null,curNitVerified=false,pendingPinForNit=null,cart={},selPay=null,selDel=null;
+let currentPrices={};
+
+function goScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('bottom-bar').classList.toggle('show',id==='screen-order');}
+
+function checkPin(){
+  const val=document.getElementById('pin-input').value.trim().toUpperCase();
+  document.getElementById('pin-error').style.display='none';
+  if(val==='ADMIN11'){openAdmin();return;}
+  const found=getClients().find(c=>c.pin===val);
+  if(!found){document.getElementById('pin-error').style.display='block';return;}
+  pendingPinForNit=found;
+  document.getElementById('nit-input').value='';
+  openNitModal(pendingPinForNit?.pin||'');
+}
+function closeNitModal(){document.getElementById('nit-modal').classList.remove('open');pendingPinForNit=null;}
+function openNitModal(pin){
+  // Update WhatsApp help link with the actual PIN
+  const wa = document.getElementById('nit-help-link');
+  if(wa){
+    const msg = encodeURIComponent('Hola Giampaolo, mi PIN es '+pin+' pero no recuerdo mi NIT. Por favor ayúdame.');
+    wa.href = 'https://wa.me/573001234567?text='+msg;
+  }
+  document.getElementById('nit-input').value='';
+  openNitModal(pendingPinForNit?.pin||'');
+  setTimeout(()=>document.getElementById('nit-input').focus(),300);
+}
+
+function verifyNit(){
+  const enteredNit=document.getElementById('nit-input').value.trim();
+  if(!pendingPinForNit){closeNitModal();return;}
+  if(pendingPinForNit.nit !== enteredNit){
+    alert('❌ NIT incorrecto. Verifica con Amo la Pasta.');
+    return;
+  }
+  curClient=pendingPinForNit;
+  curNitVerified=true;
+  closeNitModal();
+  const orders=getOrders();
+  const clientOrders=orders.filter(o=>o.pin===curClient.pin);
+  curClient.hasOrdered=clientOrders.length>0;
+  const lastOrder=clientOrders[clientOrders.length-1];
+  if(lastOrder){curClient.savedNombre=lastOrder.nombre;curClient.savedNit=lastOrder.nit;curClient.savedCel=lastOrder.cel;curClient.savedDir=lastOrder.direccion;}
+  openCatalog();
+}
+function openCatalog(){
+  cart={};
+  const catData=BASE_CATS[curClient.catPin];
+  document.getElementById('w-avatar').textContent=catData.avatar;
+  document.getElementById('w-name').textContent=curClient.nome;
+  document.getElementById('w-pin-display').textContent='PIN: '+curClient.pin;
+  checkAndShowVolumeBadge(curClient.pin);
+  renderCatalog();updateRie();
+  goScreen('screen-order');
+}
+function renderCatalog(){
+  const catData=BASE_CATS[curClient.catPin];
+  let html='';
+  catData.cats.forEach((sec,si)=>{
+    html+=`<div class="cat-label">${sec.badge} ${sec.nome}</div>`;
+    sec.items.forEach((item,ii)=>{
+      html+=`<div class="prod-card" style="border-left:4px solid ${sec.color};">
+        <div class="pc-header">
+          <div class="pc-badge" style="background:${sec.bg};">${sec.badge}</div>
+          <div style="flex:1;"><div class="pc-name" style="color:${sec.color};">${item.name}</div><div class="pc-desc">${item.desc}</div></div>
+        </div><div class="pc-items">`;
+      item.formati.forEach((f,fi)=>{
+        const key=`${si}-${ii}-${fi}`;
+        const discountPrice=typeof getVolumeDiscount==='function'?getVolumeDiscount(curClient.pin,curClient.catPin,item.name,f.g):null;
+        const finalPrice=discountPrice||f.p;
+        if(typeof currentPrices!=='undefined')currentPrices[key]=finalPrice;
+        prices[key]=finalPrice;
+        const qty=cart[key]||0;
+        const photoHtml=typeof getDishPhotoHtml==='function'?getDishPhotoHtml(key,item.name+' '+f.g):'';
+        html+=`<div class="pc-item">
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${photoHtml}
+            <div><div class="pi-name">${item.name} ${f.g}</div><div style="font-size:11px;color:var(--dim);">${f.g}</div></div>
+          </div>
+          <div class="pi-right">
+            ${discountPrice?`<span class="old-price">COP ${f.p.toLocaleString()}</span>`:''}
+            <div class="pi-price" style="color:${sec.color};">COP ${finalPrice.toLocaleString()}</div>
+            <div class="qty-ctrl">
+              <button class="qty-btn" style="background:${sec.color};" onclick="chQty('${key}',-1)">−</button>
+              <span class="qty-val" id="qty-${key}">${qty}</span>
+              <button class="qty-btn" style="background:${sec.color};" onclick="chQty('${key}',1)">+</button>
+            </div></div></div>`;
+      });
+      html+=`</div></div>`;
+    });
+  });
+  document.getElementById('catalog').innerHTML=html;
+}
+function chQty(key,d){cart[key]=(cart[key]||0)+d;if(cart[key]<0)cart[key]=0;const el=document.getElementById('qty-'+key);if(el)el.textContent=cart[key];updateRie();}
+function getDeliveryExtra(){return selDel==='exp'?5000:0;}
+function getTotal(){let sub=Object.entries(cart).reduce((s,[k,v])=>s+(currentPrices[k]||0)*v,0);const extra=getDeliveryExtra();return{sub,total:sub+extra,extra};}
+function updateRie(){const{total}=getTotal();document.getElementById('bottom-total').textContent='COP '+total.toLocaleString();let html='<div class="rie-title">Tu pedido</div>';Object.entries(cart).forEach(([k,v])=>{if(v>0){const price=currentPrices[k]||0;html+=`<div class="rie-item"><span>Producto</span><span>${v} x COP ${price.toLocaleString()}</span></div>`;}});if(selDel==='exp')html+=`<div class="rie-item"><span>Express</span><span>+COP 5.000</span></div>`;html+=`<div class="rie-item total"><span>Total</span><span>COP ${total.toLocaleString()}</span></div>`;document.getElementById('riepilogo').innerHTML=html;}
+function selectDel(d){selDel=d;['std','exp'].forEach(x=>{const chk=document.getElementById('chk-del-'+x);if(chk)chk.textContent='';const el=document.getElementById('del-'+x);if(el)el.classList.remove('selected');});const chk=document.getElementById('chk-del-'+d);if(chk)chk.textContent='✓';const el=document.getElementById('del-'+d);if(el)el.classList.add('selected');updateRie();}
+function selectPay(m){selPay=m;document.querySelectorAll('.pay-method').forEach(el=>el.classList.remove('selected'));document.querySelectorAll('.pm-check').forEach(el=>el.textContent='');const selected=document.querySelector(`[onclick="selectPay('${m}')"]`);if(selected)selected.classList.add('selected');const chk=selected?.querySelector('.pm-check');if(chk)chk.textContent='✓';}
+function openDatiFiscali(){
+  if(!Object.entries(cart).some(([k,v])=>v>0)){alert('Selecciona productos');return;}
+  const modal=document.getElementById('modal-dati');
+  const container=document.getElementById('modal-dynamic-fields');
+  const payContainer=document.getElementById('pay-methods-container');
+  payContainer.innerHTML=`<div class="pay-method" onclick="selectPay('nequi')"><span>📱 Nequi</span><div class="pm-check"></div></div><div class="pay-method" onclick="selectPay('daviplata')"><span>💜 Daviplata</span><div class="pm-check"></div></div><div class="pay-method" onclick="selectPay('bold')"><span>💳 Tarjeta Bold</span><div class="pm-check"></div></div><div class="pay-method" onclick="selectPay('transferencia')"><span>🏦 Transferencia</span><div class="pm-check"></div></div><div class="pay-method" onclick="selectPay('efectivo')"><span>💵 Efectivo</span><div class="pm-check"></div></div>`;
+  if(curClient.hasOrdered && curClient.savedNombre){
+    container.innerHTML=`<div class="f-group"><label class="f-label">Confirmar NIT / Cédula</label><input class="f-input" id="f-nit" value="${curClient.savedNit||''}" placeholder="NIT"></div>
+                         <div class="f-group"><label class="f-label">WhatsApp</label><input class="f-input" id="f-cel" value="${curClient.savedCel||''}" placeholder="+57"></div>
+                         <div class="f-group"><label class="f-label">Dirección</label><input class="f-input" id="f-direccion" value="${curClient.savedDir||''}" placeholder="Calle"></div>
+                         <input type="hidden" id="f-nombre" value="${curClient.savedNombre}">
+                         <input type="hidden" id="f-ciudad" value="Cartagena">
+                         <input type="hidden" id="f-hora" value="">
+                         <input type="hidden" id="f-nota" value="">`;
+  }else{
+    container.innerHTML=`<div class="f-group"><label class="f-label">Nombre del referente</label><input class="f-input" id="f-nombre" placeholder="Nombre"></div>
+                         <div class="f-row"><div class="f-group"><label class="f-label">NIT / Cédula</label><input class="f-input" id="f-nit" placeholder="NIT"></div><div class="f-group"><label class="f-label">WhatsApp</label><input class="f-input" id="f-cel" placeholder="+57"></div></div>
+                         <div class="f-group"><label class="f-label">Dirección</label><input class="f-input" id="f-direccion" placeholder="Calle"></div>
+                         <input type="hidden" id="f-ciudad" value="Cartagena">
+                         <input type="hidden" id="f-hora" value="">
+                         <input type="hidden" id="f-nota" value="">`;
+  }
+  modal.classList.add('open');
+  selDel=null;selPay=null;
+  ['std','exp'].forEach(x=>{const chk=document.getElementById('chk-del-'+x);if(chk)chk.textContent='';const el=document.getElementById('del-'+x);if(el)el.classList.remove('selected');});
+  document.querySelectorAll('.pay-method').forEach(el=>el.classList.remove('selected'));
+  document.querySelectorAll('.pm-check').forEach(el=>el.textContent='');
+}
+function closeModal(){document.getElementById('modal-dati').classList.remove('open');}
+function confirmOrdine(){
+  const nombre=curClient.hasOrdered?curClient.savedNombre:document.getElementById('f-nombre')?.value.trim();
+  const nit=document.getElementById('f-nit')?.value.trim();
+  const cel=document.getElementById('f-cel')?.value.trim();
+  const dir=document.getElementById('f-direccion')?.value.trim();
+  if(!nombre||!nit||!cel||!dir){alert('Completa todos los datos');return;}
+  if(!selDel){alert('Selecciona tipo de entrega');return;}
+  if(!selPay){alert('Selecciona método de pago');return;}
+  closeModal();
+  const{total}=getTotal();
+  const orderId='ORD-'+Date.now();
+  let righeWA='';
+  const catData3=BASE_CATS[curClient.catPin];
+  catData3.cats.forEach((sec,si)=>{sec.items.forEach((item,ii)=>{item.formati.forEach((f,fi)=>{
+    const key=`${si}-${ii}-${fi}`;const qty=cart[key]||0;
+    const fp=currentPrices[key]||f.p;
+    if(qty>0)righeWA+=`• ${qty}x ${item.name} ${f.g} = COP ${(fp*qty).toLocaleString()}%0A`;
+  });});});
+  const pnWA={nequi:'Nequi',daviplata:'Daviplata',bold:'Tarjeta Bold',transferencia:'Transferencia',efectivo:'Efectivo'};
+  const oraVal=document.getElementById('f-hora')?.value||'—';
+  const notaVal=document.getElementById('f-nota')?.value||'';
+  const chiusura=`%0A%0A---%0A🇮🇹 *Grazie per aver scelto l'artigianalità di Amo la Pasta!*%0A🇪🇸 *¡Gracias por elegir la artesanía de Amo la Pasta!*`;
+  const waMsg=
+    `*🍝 NUEVO PEDIDO — Amo la Pasta SAS*%0A%0A`+
+    `*ID:* ${orderId}%0A`+
+    `*Cliente:* ${nombre}%0A`+
+    `*PIN:* ${curClient.pin}%0A`+
+    `*NIT:* ${nit}%0A`+
+    `*Dirección:* ${dir}%0A`+
+    `*WhatsApp:* ${cel}%0A`+
+    `*Hora:* ${oraVal}%0A%0A`+
+    `*DETALLE:*%0A${righeWA}%0A`+
+    `*TOTAL: COP ${total.toLocaleString()}*%0A`+
+    `*Pago:* ${pnWA[selPay]||selPay}%0A`+
+    `*Entrega:* ${selDel==='exp'?'⚡ Express 15min':'🚴 Estándar 24h'}`+
+    (notaVal?`%0A*Nota:* ${notaVal}`:'')+
+    chiusura;
+  const orders=getOrders();
+  orders.push({id:orderId,pin:curClient.pin,nombre,nit,cel,direccion:dir,total,delivery:selDel,pay:selPay,items:{...cart},date:new Date().toISOString()});
+  saveOrders(orders);
+  curClient.hasOrdered=true;curClient.savedNombre=nombre;curClient.savedNit=nit;curClient.savedCel=cel;curClient.savedDir=dir;
+  const motoRef=new URLSearchParams(window.location.search).get('ref')||window._motoRef;
+  if(motoRef&&typeof registraMotoOrder==='function')registraMotoOrder(motoRef,orderId,total);
+  document.getElementById('s-pago-instruc').innerHTML=`Pedido enviado al laboratorio. <br><b>ID: ${orderId}</b>`;
+  document.getElementById('success-screen').classList.add('show');
+  setTimeout(()=>{window.open('https://wa.me/573001234567?text='+waMsg,'_blank');},600);
+}
+
+function resetOrder(){cart={};selPay=null;selDel=null;document.getElementById('success-screen').classList.remove('show');renderCatalog();updateRie();}
+
+// ===== ADMIN =====
+function adminAddClient(){
+  const nome=document.getElementById('adm-nome').value.trim();
+  const nit=document.getElementById('adm-nit').value.trim();
+  const pin=window._nextPin;
+  if(!nome||!nit||!pin){alert('Inserisci Nome e NIT. Il PIN viene generato automaticamente.');return;}
+  const clients=getClients();
+  clients.push({pin,catPin:document.getElementById('adm-cat').value,nome,nit,data:new Date().toISOString()});
+  saveClients(clients);
+  document.getElementById('adm-nome').value='';
+  document.getElementById('adm-nit').value='';
+  const prev=document.getElementById('pin-preview');if(prev)prev.style.display='none';
+  window._nextPin=null;
+  renderAdminTable();
+  alert('✅ Cliente registrato!\nPIN: '+pin);
+}
+
+function adminAddVolumeRule(){
+  const clientPin=document.getElementById('vol-pin')?.value.trim().toUpperCase();
+  const minKg=parseInt(document.getElementById('vol-kg')?.value);
+  const product=document.getElementById('vol-product')?.value;
+  const format=document.getElementById('vol-format')?.value;
+  const price=parseInt(document.getElementById('vol-price')?.value);
+  if(!clientPin||!minKg||!product||!format||!price){alert('Compila tutti i campi');return;}
+  const rules=getVolumePricing();
+  let clientRule=rules.find(r=>r.clientPin===clientPin && r.category===curClient?.catPin);
+  if(!clientRule){
+    clientRule={clientPin,category:curClient?.catPin||'HOT56',minKg,items:[]};
+    rules.push(clientRule);
+  }
+  clientRule.minKg=minKg;
+  const existing=clientRule.items.findIndex(i=>i.productName===product && i.format===format);
+  if(existing>=0)clientRule.items[existing]={productName:product,format:format,discountedPrice:price};
+  else clientRule.items.push({productName:product,format:format,discountedPrice:price});
+  saveVolumePricing(rules);
+  alert('Regola volume aggiunta!');
+  renderVolumeTable();
+}
+function renderAdminTable(){
+  const clients=getClients();
+  if(!clients.length){document.getElementById('admin-table-wrap').innerHTML='<p>Nessun cliente</p>';return;}
+  let html='<table class="client-table"><thead><tr><th>PIN</th><th>Nome</th><th>NIT</th><th>Cat</th><th></th></tr></thead><tbody>';
+  clients.forEach((c,i)=>{html+=`<tr><td class="td-pin">${c.pin}</td><td>${c.nome}</td><td>${c.nit||'—'}</td><td>${c.catPin}</td><td><button class="td-del" onclick="delClient(${i})">🗑</button></td></tr>`;});
+  html+='</tbody></table>';
+  document.getElementById('admin-table-wrap').innerHTML=html;
+}
+function renderVolumeTable(){
+  const rules=getVolumePricing();
+  if(!rules.length){document.getElementById('volume-table-wrap').innerHTML='<p>Nessuna regola volume</p>';return;}
+  let html='<table class="client-table"><thead><tr><th>Cliente</th><th>Min Kg</th><th>Prodotto</th><th>Prezzo scontato</th></tr></thead><tbody>';
+  rules.forEach(r=>{r.items.forEach(i=>{html+=`<tr><td>${r.clientPin}</td><td>${r.minKg} kg</td><td>${i.productName} ${i.format}</td><td>COP ${i.discountedPrice.toLocaleString()}</td></tr>`;});});
+  html+='</tbody></table>';
+  document.getElementById('volume-table-wrap').innerHTML=html;
+}
+function delClient(i){if(!confirm('Eliminare?'))return;const c=getClients();c.splice(i,1);saveClients(c);renderAdminTable();}
+function adminAddProva(){const pin=document.getElementById('prova-pin')?.value.trim().toUpperCase();const cliente=document.getElementById('prova-cliente')?.value.trim();if(!pin||!cliente)return;const scad=new Date();scad.setDate(scad.getDate()+15);const prove=getProve();prove.push({id:'PRV-'+Date.now(),pin,cliente,scadenza:scad.toISOString(),status:'aperta'});saveProve(prove);renderProveTable();alert('Prova creata');}
+function renderProveTable(){const prove=getProve();if(!prove.length){document.getElementById('prove-table-wrap').innerHTML='<p>Nessuna prova</p>';return;}let html='<table class="client-table"><thead><tr><th>PIN</th><th>Cliente</th><th>Scadenza</th><th>Stato</th></tr></thead><tbody>';prove.forEach(p=>{html+=`<tr><td>${p.pin}</td><td>${p.cliente}</td><td>${new Date(p.scadenza).toLocaleDateString()}</td><td>${p.status}</td></tr>`;});html+='</tbody></table>';document.getElementById('prove-table-wrap').innerHTML=html;}
+function adminAddMoto(){const code=document.getElementById('moto-code')?.value.trim().toUpperCase();const citta=document.getElementById('moto-citta')?.value.trim();if(!code||!citta)return;const refs=getMotoRefs();refs.push({code,citta,attivo:true});saveMotoRefs(refs);renderMotoTable();alert('QR Moto creata');}
+function renderMotoTable(){const refs=getMotoRefs();if(!refs.length){document.getElementById('moto-table-wrap').innerHTML='<p>Nessuna moto</p>';return;}let html='<table class="client-table"><thead><tr><th>Codice</th><th>Città</th><th>Stato</th></tr></thead><tbody>';refs.forEach(m=>{html+=`<tr><td>${m.code}</td><td>${m.citta}</td><td>${m.attivo?'✅':'❌'}</td></tr>`;});html+='</tbody></table>';document.getElementById('moto-table-wrap').innerHTML=html;}
+function openAdmin(){
+  document.getElementById('admin-body').innerHTML=`
+    <div class="admin-add">
+      <div class="admin-add-title">➕ Nuovo Cliente (Auto-PIN)</div>
+      <div class="admin-add-row">
+        <select class="admin-input" id="adm-cat" onchange="updatePreviewPin()">
+          <option value="HOT56">HOT56 (Hotel 5-6★)</option>
+          <option value="CHF12">CHF12 (Chef)</option>
+          <option value="MED11">MED11 (Medici)</option>
+          <option value="CEL14">CEL14 (Clienti)</option>
+          <option value="FAR33">FAR33 (Farmacie)</option>
+          <option value="RIV22">RIV22 (Eduin)</option>
+        </select>
+        <input class="admin-input" id="adm-nome" placeholder="Nome Hotel/Ristorante" oninput="updatePreviewPin()">
+      </div>
+      <input class="admin-input" id="adm-nit" placeholder="NIT / Cédula" style="margin-top:8px;">
+      <div id="pin-preview" style="margin-top:10px;font-weight:bold;color:#1A5C2E;font-size:14px;background:#e8f5e9;padding:10px;border:1px solid #c8e6c9;border-radius:6px;display:none;text-align:center;">
+        PIN GENERATO: <span id="suggested-pin" style="letter-spacing:1px;">---</span>
+      </div>
+      <button class="admin-add-btn" onclick="adminAddClient()" style="margin-top:12px;">Salva Nuovo Cliente</button>
+    </div>
+    <div id="admin-table-wrap"></div>
+    <hr style="margin:20px 0;opacity:0.1;">
+    <div class="admin-add"><div class="admin-add-title">🏆 Precios por volumen</div><div class="admin-add-row"><input class="admin-input" id="vol-pin" placeholder="PIN cliente"><input class="admin-input" id="vol-kg" placeholder="Kg minimi"></div><div class="admin-add-row"><input class="admin-input" id="vol-product" placeholder="Producto"><select class="admin-input" id="vol-format"><option>75g</option><option>200g</option></select></div><div class="admin-add-row"><input class="admin-input" id="vol-price" placeholder="Precio especial COP"><button class="admin-add-btn" onclick="adminAddVolumeRule()">Aggiungi Regola</button></div></div>
+    <div id="volume-table-wrap"></div>
+    <div class="admin-add"><div class="admin-add-title">📦 Prova 15gg</div><div class="admin-add-row"><input class="admin-input" id="prova-pin" placeholder="PIN"><input class="admin-input" id="prova-cliente" placeholder="Cliente"></div><button class="admin-add-btn" onclick="adminAddProva()">Crea Prova</button></div>
+    <div id="prove-table-wrap"></div>
+    <div class="admin-add"><div class="admin-add-title">🏍️ Moto QR</div><div class="admin-add-row"><input class="admin-input" id="moto-code" placeholder="MOTO1C"><input class="admin-input" id="moto-citta" placeholder="Cartagena"></div><button class="admin-add-btn" onclick="adminAddMoto()">Crea QR Moto</button></div>
+    <div id="moto-table-wrap"></div>
+    <hr style="margin:20px 0;opacity:0.1;">
+    <div class="admin-add"><div class="admin-add-title">💾 Backup Dati</div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="admin-add-btn" onclick="exportAllData()" style="background:#2c3e50;">⬇️ Esporta JSON</button>
+        <label class="admin-add-btn" style="background:#8B6914;text-align:center;cursor:pointer;">⬆️ Importa<input type="file" accept=".json" style="display:none;" onchange="importAllData(this)"></label>
+      </div>
+    </div>
+  `;
+  renderAdminTable();renderVolumeTable();renderProveTable();renderMotoTable();
+  document.getElementById('admin-modal').style.display='flex';
+  document.getElementById('admin-modal').classList.add('open');
+}
+
+function closeAdmin(){document.getElementById('admin-modal').classList.remove('open');}
+function checkAdminAccess(){const pwd=prompt('Admin PIN:');if(pwd==='ADMIN11')openAdmin();else alert('Codice errato');}
+
+// ===== EXPORT/IMPORT =====
+function exportAllData(){
+  const data={clients:getClients(),orders:getOrders(),prove:getProve(),moto:getMotoRefs(),products:getProdottiCustom(),editions:getEdizioni(),motoOrders:getMotoOrders(),volumePricing:getVolumePricing()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`amo_la_pasta_backup_${new Date().toISOString().slice(0,19)}.json`;a.click();URL.revokeObjectURL(a.href);
+}
+function importAllData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{try{const data=JSON.parse(e.target.result);if(data.clients)saveClients(data.clients);if(data.orders)saveOrders(data.orders);if(data.prove)saveProve(data.prove);if(data.moto)saveMotoRefs(data.moto);if(data.products)saveProdottiCustom(data.products);if(data.editions)saveEdizioni(data.editions);if(data.motoOrders)saveMotoOrders(data.motoOrders);if(data.volumePricing)saveVolumePricing(data.volumePricing);alert('Dati importati! Ricarica la pagina.');}catch(err){alert('Errore: '+err);}};
+  reader.readAsText(file);
+}
+
+
+// ===== AUTO-PIN GENERATOR =====
+function getKeyboardNumber(char){
+  const map={'ABC':2,'DEF':3,'GHI':4,'JKL':5,'MNO':6,'PQRS':7,'TUV':8,'WXYZ':9};
+  for(let key in map){if(key.includes(char.toUpperCase()))return map[key];}
+  return 0;
+}
+
+function updatePreviewPin(){
+  const cat=document.getElementById('adm-cat').value;
+  const nome=document.getElementById('adm-nome').value.trim();
+  const previewDiv=document.getElementById('pin-preview');
+  const suggestedSpan=document.getElementById('suggested-pin');
+  if(nome.length<2){if(previewDiv)previewDiv.style.display='none';return;}
+  const parole=nome.split(/\s+/).filter(p=>p.length>0);
+  let baseCodice='';
+  if(parole.length>=3){
+    baseCodice=''+getKeyboardNumber(parole[0][0])+getKeyboardNumber(parole[1][0])+getKeyboardNumber(parole[2][0]);
+  }else{
+    const clients=getClients();let maxProg=344;
+    clients.forEach(cl=>{const p=parseInt(cl.pin.split('-')[1]);if(!isNaN(p)&&p>maxProg&&p<1000)maxProg=p;});
+    baseCodice=(maxProg+1).toString();
+  }
+  let codiceFinale=parseInt(baseCodice);
+  const allPins=getClients().map(cl=>cl.pin);
+  while(allPins.includes(cat+'-'+codiceFinale))codiceFinale++;
+  const pinRisultante=cat+'-'+codiceFinale;
+  if(suggestedSpan)suggestedSpan.textContent=pinRisultante;
+  if(previewDiv)previewDiv.style.display='block';
+  window._nextPin=pinRisultante;
+}
+
+function initDemo(){
+  if(getClients().length===0){
+    saveClients([
+      {pin:'HOT56-01',catPin:'HOT56',nome:'Hotel Las Americas',nit:'900123456',data:new Date().toISOString()},
+      {pin:'HOT56-02',catPin:'HOT56',nome:'Sofitel Santa Clara',nit:'901234567',data:new Date().toISOString()},
+      {pin:'CHF12-01',catPin:'CHF12',nome:'Chef Martinez',nit:'123456789',data:new Date().toISOString()},
+      {pin:'FAR33-345',catPin:'FAR33',nome:'Farmacia Cruz Verde',nit:'800123456',data:new Date().toISOString()},
+    ]);
+    saveVolumePricing([
+      {clientPin:'HOT56-01',minKg:100,items:[{productName:'Spaghetti Gold',format:'75g',discountedPrice:5800},{productName:'Spaghetti Gold',format:'200g',discountedPrice:15000}]}
+    ]);
+  }
+}
+initDemo();
+
+// Auto-open admin if ?admin=true in URL
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('admin')==='true'){
+    setTimeout(()=>checkAdminAccess(),500);
+  }
+  // Auto-set moto ref from URL
+  const ref=params.get('ref');
+  if(ref){
+    window._motoRef=ref.toUpperCase();
+  }
+})();
+
+// ===== FOTO PIATTI =====
+let currentPhotoKey = null;
+
+function getDishPhotos(){try{return JSON.parse(localStorage.getItem('amp_dish_photos')||'{}');}catch{return{};}}
+function saveDishPhotos(p){try{localStorage.setItem('amp_dish_photos',JSON.stringify(p));}catch{}}
+
+function openPhotoModal(productKey, productName){
+  currentPhotoKey = productKey;
+  const photos = getDishPhotos();
+  const modal = document.getElementById('photo-modal');
+  const img = document.getElementById('photo-modal-img');
+  const empty = document.getElementById('photo-modal-empty');
+  const label = document.getElementById('photo-modal-label');
+  label.textContent = productName;
+  if(photos[productKey]){
+    img.src = photos[productKey];
+    img.style.display = 'block';
+    empty.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    empty.style.display = 'block';
+  }
+  modal.classList.add('open');
+}
+
+function closePhotoModal(){
+  document.getElementById('photo-modal').classList.remove('open');
+  currentPhotoKey = null;
+}
+
+function uploadDishPhoto(input){
+  if(!input.files[0] || !currentPhotoKey) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const photos = getDishPhotos();
+    photos[currentPhotoKey] = e.target.result;
+    saveDishPhotos(photos);
+    // Update modal
+    const img = document.getElementById('photo-modal-img');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('photo-modal-empty').style.display = 'none';
+    // Refresh catalog to show new photo
+    if(curClient) renderCatalog();
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function getDishPhotoHtml(productKey, productName){
+  const photos = getDishPhotos();
+  if(photos[productKey]){
+    return `<img src="${photos[productKey]}" class="pi-photo" onclick="openPhotoModal('${productKey}','${productName}')" title="Tocca per cambiare foto">`;
+  } else {
+    return `<div class="pi-photo-empty" onclick="openPhotoModal('${productKey}','${productName}')" title="Aggiungi foto piatto">🍽️</div>`;
+  }
+}
+
+</script>
+
+<!-- PHOTO MODAL -->
+<div class="photo-modal" id="photo-modal">
+  <div class="photo-modal-label" id="photo-modal-label">Foto piatto</div>
+  <img id="photo-modal-img" src="" alt="Foto piatto" style="display:none;">
+  <div id="photo-modal-empty" style="color:rgba(255,255,255,.6);font-size:13px;">Nessuna foto ancora</div>
+  <label class="photo-upload-btn">
+    📷 Cambia foto
+    <input type="file" accept="image/*" style="display:none;" onchange="uploadDishPhoto(this)">
+  </label>
+  <button class="photo-close-btn" onclick="closePhotoModal()">Chiudi ✕</button>
+</div>
+
+
+<!-- FARMACIA AUTO-REGISTRAZIONE -->
+<div class="reg-screen" id="reg-screen">
+  <div class="reg-card">
+    <div class="reg-title">🍝 Amo la Pasta SAS</div>
+    <div class="reg-sub">Registro de Farmacia — Primer acceso</div>
+    <input class="reg-input" type="text" id="reg-nombre" placeholder="Nombre de la Farmacia">
+    <input class="reg-input" type="text" id="reg-nit" placeholder="NIT de la Farmacia">
+    <input class="reg-input" type="text" id="reg-dir" placeholder="Dirección">
+    <input class="reg-input" type="tel" id="reg-cel" placeholder="WhatsApp de contacto">
+    <button class="reg-btn" onclick="registrarFarmacia()">Registrar y Ver Catálogo →</button>
+    <div class="reg-pin-result" id="reg-pin-result">
+      <div class="reg-pin-label">Tu PIN personal</div>
+      <div class="reg-pin-value" id="reg-pin-value">---</div>
+      <div style="font-size:11px;color:#666;margin-top:4px;">Guárdalo — lo usarás para futuros pedidos</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HACCP — Amo la Pasta</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1A5C2E;--gold:#C5A34A;--bg:#060d0a;--bg2:#0d1a10;--bg3:#111f14;--text:#e8f5ee;--dim:rgba(232,245,238,.4);--rd:#C0392B;--ok:#27ae60;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* HEADER */
+.header{background:linear-gradient(90deg,var(--bg2),var(--bg3));border-bottom:3px solid var(--g);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.h-brand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;font-style:italic;}
+.h-brand span{color:var(--gold);}
+.h-title{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-top:2px;}
+.h-clock{font-size:20px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums;}
+
+/* PROGRESS BAR */
+.progress-wrap{padding:12px 16px;background:var(--bg2);border-bottom:1px solid rgba(26,92,46,.2);}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:6px;font-weight:600;}
+.progress-bar{height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--gold));border-radius:4px;transition:width .5s;}
+
+/* STEPS NAV */
+.steps-nav{display:flex;padding:12px 16px;gap:6px;overflow-x:auto;background:var(--bg2);border-bottom:1px solid rgba(26,92,46,.15);}
+.step-btn{flex-shrink:0;padding:6px 14px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.06em;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;transition:all .2s;}
+.step-btn.active{background:var(--g);color:white;}
+.step-btn.done{background:rgba(39,174,96,.2);color:#4ecf7e;border:1px solid rgba(39,174,96,.3);}
+.step-btn.pending{background:rgba(255,255,255,.06);color:var(--dim);border:1px solid rgba(255,255,255,.1);}
+
+/* CONTENT */
+.content{padding:16px;max-width:600px;margin:0 auto;}
+
+/* SECTION */
+.section{background:var(--bg2);border:1px solid rgba(26,92,46,.25);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+.section-header{padding:14px 16px;background:linear-gradient(90deg,rgba(26,92,46,.3),rgba(26,92,46,.1));border-bottom:1px solid rgba(26,92,46,.2);}
+.sh-num{display:inline-block;width:28px;height:28px;background:var(--g);border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:700;margin-right:10px;}
+.sh-title{font-size:16px;font-weight:700;}
+.sh-sub{font-size:11px;color:var(--dim);margin-top:4px;padding-left:38px;}
+
+/* CHECK ITEMS */
+.check-list{padding:12px 16px;display:flex;flex-direction:column;gap:8px;}
+.check-item{background:var(--bg3);border-radius:8px;padding:12px 14px;border:2px solid transparent;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;}
+.check-item.checked{border-color:var(--ok);background:rgba(39,174,96,.08);}
+.check-item.failed{border-color:var(--rd);background:rgba(192,57,43,.08);}
+.ci-check{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;transition:all .2s;}
+.check-item.checked .ci-check{background:var(--ok);border-color:var(--ok);}
+.check-item.failed .ci-check{background:var(--rd);border-color:var(--rd);}
+.ci-text{flex:1;}
+.ci-label{font-size:14px;font-weight:600;}
+.ci-desc{font-size:11px;color:var(--dim);margin-top:2px;}
+.ci-actions{display:flex;gap:6px;}
+.ci-btn{padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;}
+.btn-ok{background:rgba(39,174,96,.2);color:#4ecf7e;border:1px solid rgba(39,174,96,.3);}
+.btn-fail{background:rgba(192,57,43,.2);color:#ff6b35;border:1px solid rgba(192,57,43,.3);}
+
+/* INPUT FIELDS */
+.input-group{padding:12px 16px;border-top:1px solid rgba(255,255,255,.04);}
+.input-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;display:block;}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.inp{background:var(--bg3);border:1px solid rgba(26,92,46,.3);border-radius:6px;padding:10px 12px;color:white;font-family:'Rajdhani',sans-serif;font-size:15px;width:100%;outline:none;}
+.inp:focus{border-color:var(--g);}
+select.inp option{background:var(--bg2);}
+
+/* FIRMA */
+.firma-wrap{padding:12px 16px;border-top:1px solid rgba(255,255,255,.04);}
+.firma-canvas{width:100%;height:120px;background:rgba(255,255,255,.04);border:1px solid rgba(26,92,46,.3);border-radius:6px;cursor:crosshair;touch-action:none;}
+.firma-label{font-size:11px;color:var(--dim);margin-bottom:6px;display:block;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+.firma-btns{display:flex;gap:8px;margin-top:8px;}
+.firma-btn{padding:6px 16px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;}
+.btn-clear{background:rgba(255,255,255,.08);color:var(--dim);}
+.btn-confirm{background:var(--g);color:white;}
+
+/* BOTTOM ACTIONS */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid rgba(26,92,46,.3);padding:12px 16px;display:flex;gap:10px;}
+.btn-prev{flex:1;background:rgba(255,255,255,.06);color:var(--dim);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:14px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;cursor:pointer;}
+.btn-next{flex:2;background:var(--g);color:white;border:none;border-radius:8px;padding:14px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;cursor:pointer;}
+.btn-next:disabled{background:rgba(255,255,255,.1);color:var(--dim);cursor:not-allowed;}
+.btn-complete{flex:2;background:linear-gradient(90deg,var(--g),var(--gold));color:white;border:none;border-radius:8px;padding:14px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:900;letter-spacing:.08em;cursor:pointer;}
+
+/* SUCCESS */
+.success-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:100;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;}
+.success-screen.show{display:flex;}
+.success-icon{font-size:80px;margin-bottom:20px;}
+.success-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--gold);margin-bottom:8px;}
+.success-sub{font-size:15px;color:var(--dim);margin-bottom:32px;line-height:1.6;}
+.success-code{font-size:13px;letter-spacing:.15em;color:var(--dim);background:var(--bg2);padding:10px 20px;border-radius:6px;border:1px solid rgba(26,92,46,.3);margin-bottom:24px;}
+.btn-nuovo-giorno{background:var(--g);color:white;border:none;border-radius:8px;padding:14px 32px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;cursor:pointer;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--g);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="h-brand">Amo <span>la Pasta</span></div>
+    <div class="h-title">Sistema HACCP — BPM Laboratorio</div>
+  </div>
+  <div class="h-clock" id="clock">00:00</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span id="progress-text">Passo 1 di 5</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%;"></div></div>
+</div>
+
+<div class="steps-nav" id="steps-nav"></div>
+
+<div class="content" id="content" style="padding-bottom:80px;"></div>
+
+<div class="bottom-bar">
+  <button class="btn-prev" id="btn-prev" onclick="prevStep()">← Indietro</button>
+  <button class="btn-next" id="btn-next" onclick="nextStep()">Avanti →</button>
+</div>
+
+<div class="success-screen" id="success">
+  <div class="success-icon">✅</div>
+  <div class="success-title">HACCP Completato</div>
+  <div class="success-sub">Tutti i controlli BPM registrati.<br>Il laboratorio è autorizzato a produrre.<br>Dati archiviati e disponibili per DADIS/INVIMA.</div>
+  <div class="success-code" id="success-code">—</div>
+  <button class="btn-nuovo-giorno" onclick="resetAll()">Nuovo Giorno →</button>
+</div>
+
+<script>
+// ===== CLOCK =====
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clock').textContent=now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+setInterval(updateClock,1000);updateClock();
+
+// ===== STRUTTURA PASSI =====
+const steps=[
+  {
+    id:'operatore',
+    title:'1. Registrazione Operatore',
+    sub:'Chi entra in laboratorio oggi',
+    icon:'👤',
+    checks:[
+      {id:'mani',label:'Mani lavate con sapone',desc:'Lavaggio minimo 30 secondi con sapone antibatterico'},
+      {id:'dpi',label:'DPI indossati correttamente',desc:'Grembiule + cuffia + guanti se necessario'},
+      {id:'salute',label:'Nessun sintomo di malattia',desc:'Nessuna febbre, tosse, diarrea o sintomi gastrointestinali'},
+      {id:'gioielli',label:'Nessun gioiello o orologio',desc:'Anelli, bracciali e orologi rimossi prima di entrare'},
+    ],
+    inputs:[
+      {id:'nome_op',label:'Nome operatore',type:'text',placeholder:'Nome e cognome',cols:2},
+      {id:'ora_entrata',label:'Ora ingresso',type:'time',cols:1},
+      {id:'ruolo',label:'Ruolo',type:'select',options:['Maestro Pastaro','Collaboratrice','Responsabile'],cols:1},
+    ]
+  },
+  {
+    id:'laboratorio',
+    title:'2. Controllo Laboratorio',
+    sub:'Stato del laboratorio prima della produzione',
+    icon:'🏭',
+    checks:[
+      {id:'piano_inox',label:'Piano inox pulito e sanificato',desc:'Superficie pulita con detergente alimentare e asciugata'},
+      {id:'macchina_p10',label:'Macchina P/10 pulita',desc:'Trafila + cilindri + vasca impasto puliti dall\'uso precedente'},
+      {id:'frigo_temp',label:'Temperatura frigo OK (0-4°C)',desc:'Verificare termometro frigo prima di aprire'},
+      {id:'essic_pulito',label:'Telai essiccazione puliti',desc:'Telai lavati e asciutti — nessun residuo pasta precedente'},
+      {id:'ac_acceso',label:'AC zona essiccazione acceso (DRY)',desc:'AC 9.000 BTU in modalita DRY da almeno 1 ora'},
+      {id:'pavimento',label:'Pavimento pulito e asciutto',desc:'Nessuna pozza d\'acqua o residuo sul pavimento'},
+    ],
+    inputs:[
+      {id:'temp_frigo',label:'Temperatura frigo (°C)',type:'number',placeholder:'es. 2',cols:1},
+      {id:'temp_camera',label:'Temperatura camera essiccazione (°C)',type:'number',placeholder:'es. 21',cols:1},
+      {id:'umidita_camera',label:'Umidità camera (%)',type:'number',placeholder:'es. 54',cols:1},
+      {id:'ora_controllo',label:'Ora controllo',type:'time',cols:1},
+    ]
+  },
+  {
+    id:'materie_prime',
+    title:'3. Controllo Materie Prime',
+    sub:'Verifica ingredienti da usare oggi',
+    icon:'🌾',
+    checks:[
+      {id:'farina_gf',label:'Farina riso GF: data scadenza OK',desc:'Verificare etichetta — nessuna confezione aperta da più di 30 giorni'},
+      {id:'uova_ok',label:'Uova pasteurizzate: aspetto OK',desc:'Nessun odore strano — conservate a 0-4°C'},
+      {id:'xantana_ok',label:'Goma xantana: lotto verificato',desc:'Lotto fornitore annotato — scadenza OK'},
+      {id:'no_cross',label:'Nessuna contaminazione crociata',desc:'Ingredienti con glutine assenti dal laboratorio — zero rischio cross-contaminazione'},
+    ],
+    inputs:[
+      {id:'farina_lotto',label:'Lotto farina riso GF',type:'text',placeholder:'Lotto fornitore',cols:2},
+      {id:'uova_lotto',label:'Lotto uova pasteurizzate',type:'text',placeholder:'Lotto fornitore',cols:2},
+      {id:'farina_qty',label:'Quantità farina usata (kg)',type:'number',placeholder:'es. 3',cols:1},
+      {id:'uova_qty',label:'Numero uova usate',type:'number',placeholder:'es. 24',cols:1},
+    ]
+  },
+  {
+    id:'produzione',
+    title:'4. Registrazione Lotto',
+    sub:'Dati del lotto prodotto oggi',
+    icon:'⚙️',
+    checks:[
+      {id:'peso_pesato',label:'Peso impasto pesato su bilancia',desc:'Bilancia di precisione 0,1g — zero ad inizio pesata'},
+      {id:'ricetta_corretta',label:'Ricetta corretta selezionata',desc:'Originale / Gold / Green — proporzioni rispettate'},
+      {id:'trafila_ok',label:'Trafila verificata prima dell\'uso',desc:'Trafila pulita — nessun residuo pasta precedente — dado serrato'},
+      {id:'cottura_test',label:'Cottura test lotto eseguita',desc:'5-6 pezzi in acqua bollente — acqua limpida — tempo cottura registrato'},
+    ],
+    inputs:[
+      {id:'lotto_id',label:'ID Lotto (es. LOT-029A)',type:'text',placeholder:'LOT-XXX',cols:2},
+      {id:'linea_prod',label:'Linea prodotta',type:'select',options:['Originale','Gold','Green','Gnocchi Standard','Gnocchi Gold'],cols:1},
+      {id:'peso_impasto',label:'Peso impasto (kg)',type:'number',placeholder:'es. 8',cols:1},
+      {id:'ora_produzione',label:'Ora inizio produzione',type:'time',cols:1},
+      {id:'tempo_cottura',label:'Tempo cottura test (minuti)',type:'number',placeholder:'es. 4.5',cols:1},
+      {id:'acqua_cottura',label:'Acqua cottura',type:'select',options:['Limpida','Leggermente torbida','Torbida'],cols:2},
+    ]
+  },
+  {
+    id:'chiusura',
+    title:'5. Firma e Chiusura',
+    sub:'Conferma controlli e firma operatore',
+    icon:'✍️',
+    checks:[
+      {id:'registro_ok',label:'Registro digitale aggiornato',desc:'Tutti i dati del lotto inseriti nel registro su tablet'},
+      {id:'confezionamento_ok',label:'Confezionamento igienico',desc:'Sacchetti Kraft chiusi con occhielli — nessuna contaminazione durante confezionamento'},
+      {id:'stoccaggio_ok',label:'Prodotto stoccato correttamente',desc:'In attesa essiccazione completa — zona essiccazione / su telai / non in sacchetto prima del 12%'},
+      {id:'pulizia_fine',label:'Pulizia area produzione completata',desc:'Piano inox + macchina + utensili lavati per fine turno'},
+    ],
+    firma:true,
+    inputs:[
+      {id:'note_lotto',label:'Note / Anomalie / Osservazioni',type:'text',placeholder:'Nessuna anomalia rilevata',cols:2},
+    ]
+  }
+];
+
+let currentStep=0;
+const stato={checks:{},inputs:{},firma:null};
+
+// ===== RENDER NAV =====
+function renderNav(){
+  document.getElementById('steps-nav').innerHTML=steps.map((s,i)=>{
+    const done=isStepDone(i);
+    const cls=i===currentStep?'active':done?'done':'pending';
+    return`<button class="step-btn ${cls}" onclick="goStep(${i})">${s.icon} ${s.title.split('.')[0]}</button>`;
+  }).join('');
+}
+
+// ===== RENDER CONTENT =====
+function renderContent(){
+  const s=steps[currentStep];
+  let html=`<div class="section">
+    <div class="section-header">
+      <span class="sh-num">${currentStep+1}</span>
+      <span class="sh-title">${s.title}</span>
+      <div class="sh-sub">${s.sub}</div>
+    </div>
+    <div class="check-list">`;
+
+  s.checks.forEach(c=>{
+    const st=stato.checks[c.id];
+    const cls=st==='ok'?'checked':st==='fail'?'failed':'';
+    const icon=st==='ok'?'✓':st==='fail'?'✕':'';
+    html+=`<div class="check-item ${cls}" id="ci-${c.id}">
+      <div class="ci-check">${icon}</div>
+      <div class="ci-text">
+        <div class="ci-label">${c.label}</div>
+        <div class="ci-desc">${c.desc}</div>
+      </div>
+      <div class="ci-actions">
+        <button class="ci-btn btn-ok" onclick="setCheck('${c.id}','ok',event)">✓ OK</button>
+        <button class="ci-btn btn-fail" onclick="setCheck('${c.id}','fail',event)">✕ NO</button>
+      </div>
+    </div>`;
+  });
+
+  html+=`</div>`;
+
+  if(s.inputs&&s.inputs.length>0){
+    html+=`<div class="input-group"><div class="input-row">`;
+    s.inputs.forEach(inp=>{
+      const val=stato.inputs[inp.id]||'';
+      const span=inp.cols===2?'grid-column:1/-1;':'';
+      if(inp.type==='select'){
+        html+=`<div style="${span}"><label class="input-label">${inp.label}</label>
+          <select class="inp" id="inp-${inp.id}" onchange="saveInput('${inp.id}',this.value)">
+            ${inp.options.map(o=>`<option value="${o}" ${val===o?'selected':''}>${o}</option>`).join('')}
+          </select></div>`;
+      }else{
+        html+=`<div style="${span}"><label class="input-label">${inp.label}</label>
+          <input class="inp" type="${inp.type}" id="inp-${inp.id}" placeholder="${inp.placeholder||''}" value="${val}"
+            onchange="saveInput('${inp.id}',this.value)" oninput="saveInput('${inp.id}',this.value)"></div>`;
+      }
+    });
+    html+=`</div></div>`;
+  }
+
+  if(s.firma){
+    html+=`<div class="firma-wrap">
+      <span class="firma-label">✍️ Firma Operatore</span>
+      <canvas class="firma-canvas" id="firma-canvas" width="600" height="120"></canvas>
+      <div class="firma-btns">
+        <button class="firma-btn btn-clear" onclick="clearFirma()">Cancella</button>
+        <button class="firma-btn btn-confirm" onclick="confirmFirma()">Conferma Firma</button>
+      </div>
+    </div>`;
+  }
+
+  html+=`</div>`;
+  document.getElementById('content').innerHTML=html;
+  updateProgress();
+  updateButtons();
+
+  if(s.firma) initFirma();
+}
+
+// ===== CHECK ACTIONS =====
+function setCheck(id,val,e){
+  e.stopPropagation();
+  stato.checks[id]=stato.checks[id]===val?null:val;
+  renderContent();
+}
+
+function saveInput(id,val){stato.inputs[id]=val;}
+
+// ===== FIRMA =====
+let drawing=false,lastX=0,lastY=0;
+function initFirma(){
+  const canvas=document.getElementById('firma-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  ctx.strokeStyle='#4ecf7e';ctx.lineWidth=2;ctx.lineCap='round';
+
+  const getPos=(e)=>{
+    const r=canvas.getBoundingClientRect();
+    const sc=canvas.width/r.width;
+    if(e.touches) return{x:(e.touches[0].clientX-r.left)*sc,y:(e.touches[0].clientY-r.top)*sc};
+    return{x:(e.clientX-r.left)*sc,y:(e.clientY-r.top)*sc};
+  };
+  canvas.onmousedown=canvas.ontouchstart=(e)=>{e.preventDefault();drawing=true;const p=getPos(e);lastX=p.x;lastY=p.y;};
+  canvas.onmousemove=canvas.ontouchmove=(e)=>{e.preventDefault();if(!drawing)return;const p=getPos(e);ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);ctx.stroke();lastX=p.x;lastY=p.y;};
+  canvas.onmouseup=canvas.ontouchend=()=>{drawing=false;};
+
+  if(stato.firma){
+    const img=new Image();img.src=stato.firma;img.onload=()=>ctx.drawImage(img,0,0);
+  }
+}
+function clearFirma(){
+  const canvas=document.getElementById('firma-canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  stato.firma=null;
+}
+function confirmFirma(){
+  const canvas=document.getElementById('firma-canvas');
+  stato.firma=canvas.toDataURL();
+  alert('Firma confermata!');
+}
+
+// ===== PROGRESS =====
+function updateProgress(){
+  const total=steps.reduce((s,st)=>s+st.checks.length,0);
+  const done=Object.values(stato.checks).filter(v=>v==='ok').length;
+  const pct=Math.round((done/total)*100);
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-text').textContent=`Passo ${currentStep+1} di ${steps.length}`;
+  document.getElementById('progress-pct').textContent=pct+'%';
+}
+
+// ===== NAV =====
+function isStepDone(i){
+  return steps[i].checks.every(c=>stato.checks[c.id]==='ok'||stato.checks[c.id]==='fail');
+}
+function goStep(i){currentStep=i;renderNav();renderContent();}
+function prevStep(){if(currentStep>0){currentStep--;renderNav();renderContent();window.scrollTo(0,0);}}
+function nextStep(){
+  if(currentStep<steps.length-1){currentStep++;renderNav();renderContent();window.scrollTo(0,0);}
+  else{completeHaccp();}
+}
+function updateButtons(){
+  document.getElementById('btn-prev').style.display=currentStep===0?'none':'block';
+  const btn=document.getElementById('btn-next');
+  if(currentStep===steps.length-1){
+    btn.textContent='✓ Completa HACCP';
+    btn.className='btn-complete';
+  }else{
+    btn.textContent='Avanti →';
+    btn.className='btn-next';
+  }
+}
+
+// ===== COMPLETE =====
+function completeHaccp(){
+  const now=new Date();
+  const code='HACCP-'+now.toISOString().slice(0,10).replace(/-/g,'')+'-'+now.getHours().toString().padStart(2,'0')+now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('success-code').textContent=`Codice registrazione: ${code} · ${now.toLocaleString('it-IT')}`;
+  document.getElementById('success').classList.add('show');
+}
+function resetAll(){
+  Object.keys(stato.checks).forEach(k=>delete stato.checks[k]);
+  Object.keys(stato.inputs).forEach(k=>delete stato.inputs[k]);
+  stato.firma=null;
+  currentStep=0;
+  document.getElementById('success').classList.remove('show');
+  renderNav();renderContent();
+}
+
+// ===== INIT =====
+renderNav();renderContent();
+</script>
+</body>
+</html>

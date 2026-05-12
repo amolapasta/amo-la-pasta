@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amo la Pasta — Monitor Laboratorio</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;0,900;1,700&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g:#1A5C2E; --gold:#C5A34A; --blu:#1a4c8c; --grn:#2d6b3a; --ver:#8B1A4A;
+  --bg:#060d0a; --bg2:#0d1a10; --bg3:#111f14;
+  --text:#e8f5ee; --dim:rgba(232,245,238,.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* HEADER */
+.header{background:linear-gradient(90deg,var(--bg2),var(--bg3));border-bottom:2px solid var(--g);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
+.h-brand{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;font-style:italic;color:white;}
+.h-brand span{color:var(--gold);}
+.h-clock{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:var(--gold);letter-spacing:.1em;}
+.h-date{font-size:13px;color:var(--dim);text-align:right;margin-top:2px;}
+.h-status{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#4ecf7e;}
+.h-dot{width:8px;height:8px;border-radius:50%;background:#4ecf7e;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* MAIN GRID */
+.main{display:grid;grid-template-columns:1.4fr 1fr 1fr;grid-template-rows:auto auto;gap:12px;padding:12px;height:calc(100vh - 64px);}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid rgba(26,92,46,.3);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;}
+.card-header{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(26,92,46,.2);}
+.card-title{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);}
+.card-count{font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--gold);}
+.card-body{padding:12px;flex:1;overflow-y:auto;}
+
+/* ORDINI */
+.ordine{background:var(--bg3);border:1px solid rgba(26,92,46,.2);border-radius:6px;padding:10px 12px;margin-bottom:8px;position:relative;cursor:pointer;transition:border-color .2s;}
+.ordine:hover{border-color:var(--g);}
+.ordine.urgent{border-color:#ff6b35;animation:urgentPulse 1.5s infinite;}
+@keyframes urgentPulse{0%,100%{border-color:#ff6b35;}50%{border-color:rgba(255,107,53,.3);}}
+.ord-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.ord-id{font-family:'Orbitron',monospace;font-size:11px;color:var(--dim);font-weight:700;}
+.ord-time{font-size:12px;color:var(--dim);}
+.ord-cliente{font-size:15px;font-weight:700;color:white;margin-bottom:4px;}
+.ord-items{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+.ord-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;}
+.tag-orig{background:rgba(26,92,46,.4);color:#4ecf7e;border:1px solid rgba(26,92,46,.5);}
+.tag-gold{background:rgba(197,163,74,.2);color:var(--gold);border:1px solid rgba(197,163,74,.3);}
+.tag-serenissima{background:rgba(26,76,140,.3);color:#6ab0ff;border:1px solid rgba(26,76,140,.4);}
+.tag-green{background:rgba(45,107,58,.3);color:#6adf8a;border:1px solid rgba(45,107,58,.4);}
+.tag-gnocchi{background:rgba(139,26,74,.2);color:#ff80b0;border:1px solid rgba(139,26,74,.3);}
+.ord-bottom{display:flex;align-items:center;justify-content:space-between;}
+.ord-canale{font-size:11px;color:var(--dim);}
+.ord-status{font-size:10px;font-weight:700;padding:2px 10px;border-radius:100px;}
+.status-new{background:rgba(255,107,53,.2);color:#ff6b35;border:1px solid rgba(255,107,53,.3);}
+.status-prod{background:rgba(197,163,74,.2);color:var(--gold);border:1px solid rgba(197,163,74,.3);}
+.status-ready{background:rgba(26,92,46,.3);color:#4ecf7e;border:1px solid rgba(26,92,46,.4);}
+.status-delivery{background:rgba(26,76,140,.3);color:#6ab0ff;border:1px solid rgba(26,76,140,.4);}
+
+/* PRODUZIONE */
+.prod-lotto{background:var(--bg3);border:1px solid rgba(197,163,74,.2);border-radius:6px;padding:12px;margin-bottom:8px;}
+.pl-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.pl-id{font-family:'Orbitron',monospace;font-size:12px;color:var(--gold);font-weight:700;}
+.pl-linea{font-size:11px;font-weight:700;padding:2px 10px;border-radius:100px;}
+.pl-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-bottom:8px;overflow:hidden;}
+.pl-bar-fill{height:100%;border-radius:3px;transition:width 1s;}
+.pl-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.pl-stat{text-align:center;}
+.pl-stat-val{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;}
+.pl-stat-lab{font-size:9px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;}
+
+/* ESSICCAZIONE */
+.essic-item{background:var(--bg3);border-radius:6px;padding:10px 12px;margin-bottom:8px;border:1px solid rgba(255,255,255,.06);}
+.ei-header{display:flex;justify-content:space-between;margin-bottom:8px;}
+.ei-name{font-size:13px;font-weight:700;}
+.ei-time{font-family:'Orbitron',monospace;font-size:12px;color:var(--gold);}
+.ei-gauges{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.gauge{text-align:center;background:rgba(255,255,255,.04);border-radius:4px;padding:6px;}
+.gauge-val{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;}
+.gauge-lab{font-size:8px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+.gauge-ok{color:#4ecf7e;}
+.gauge-warn{color:var(--gold);}
+.gauge-bad{color:#ff6b35;}
+
+/* MAGAZZINO */
+.mag-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.mag-item:last-child{border:none;}
+.mag-name{font-size:13px;font-weight:500;flex:1;}
+.mag-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
+.mag-bar{height:100%;border-radius:3px;}
+.bar-ok{background:linear-gradient(90deg,var(--g),#4ecf7e);}
+.bar-warn{background:linear-gradient(90deg,#8B6914,var(--gold));}
+.bar-crit{background:linear-gradient(90deg,#8B1A1A,#ff6b35);}
+.mag-qty{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;min-width:60px;text-align:right;}
+
+/* MOTO */
+.moto-card{background:var(--bg3);border-radius:6px;padding:10px 12px;margin-bottom:8px;border:1px solid rgba(255,255,255,.06);}
+.mc-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.mc-icon{font-size:20px;}
+.mc-title{font-size:14px;font-weight:700;}
+.mc-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 10px;border-radius:100px;}
+.mc-items{display:flex;flex-direction:column;gap:4px;}
+.mc-item{font-size:12px;color:var(--dim);display:flex;justify-content:space-between;}
+.mc-item span{color:white;font-weight:600;}
+
+/* CANALI */
+.canale-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.canale-item{background:var(--bg3);border-radius:6px;padding:10px;text-align:center;border:1px solid rgba(255,255,255,.06);}
+.ci-pin{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;margin-bottom:4px;}
+.ci-count{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;}
+.ci-label{font-size:9px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:rgba(255,255,255,.04);}
+::-webkit-scrollbar-thumb{background:var(--g);border-radius:2px;}
+
+/* BTN NUOVO ORDINE */
+.btn-nuovo{position:fixed;bottom:20px;right:20px;background:var(--g);color:white;border:none;border-radius:100px;padding:12px 24px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 20px rgba(26,92,46,.4);transition:all .2s;z-index:100;}
+.btn-nuovo:hover{background:var(--gold);color:#1a1009;transform:translateY(-2px);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--g);border-radius:12px;padding:24px;width:90%;max-width:480px;}
+.modal h3{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--gold);margin-bottom:20px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-weight:700;}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg3);border:1px solid rgba(26,92,46,.3);border-radius:6px;padding:10px 12px;color:white;font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--g);}
+.form-group select option{background:var(--bg2);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-btns{display:flex;gap:10px;margin-top:20px;}
+.btn-save{flex:1;background:var(--g);color:white;border:none;border-radius:6px;padding:12px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;}
+.btn-cancel{background:transparent;color:var(--dim);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:12px 20px;font-family:'Rajdhani',sans-serif;font-size:14px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="h-brand">Amo <span>la Pasta</span></div>
+    <div style="font-size:10px;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;">Monitor Laboratorio — Cartagena de Indias</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px;">
+    <div class="h-status"><div class="h-dot"></div>Sistema Attivo</div>
+    <div>
+      <div class="h-clock" id="clock">00:00:00</div>
+      <div class="h-date" id="date">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- COL 1: ORDINI DEL GIORNO -->
+  <div class="card" style="grid-row:1/3;">
+    <div class="card-header">
+      <span class="card-title">📋 Ordini del Giorno</span>
+      <span class="card-count" id="ord-count">0</span>
+    </div>
+    <div class="card-body" id="ordini-list"></div>
+  </div>
+
+  <!-- COL 2: PRODUZIONE IN CORSO -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">⚙️ Produzione in Corso</span>
+      <span style="font-size:11px;color:var(--dim)" id="prod-aggiorno">—</span>
+    </div>
+    <div class="card-body" id="produzione-list"></div>
+  </div>
+
+  <!-- COL 2 ROW 2: ESSICCAZIONE -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🌡️ Zona Essiccazione</span>
+      <span style="font-size:10px;color:var(--dim)">AC 9.000 BTU DRY+COOL</span>
+    </div>
+    <div class="card-body" id="essic-list"></div>
+  </div>
+
+  <!-- COL 3: MAGAZZINO -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📦 Magazzino</span>
+      <span style="font-size:11px;color:var(--dim)">Scorte oggi</span>
+    </div>
+    <div class="card-body" id="magazzino-list"></div>
+  </div>
+
+  <!-- COL 3 ROW 2: MOTO + CANALI -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🏍️ Consegne + Canali</span>
+    </div>
+    <div class="card-body">
+      <div id="moto-list"></div>
+      <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin:10px 0 8px;font-weight:700;">Ordini per canale oggi</div>
+      <div class="canale-grid" id="canali-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<button class="btn-nuovo" onclick="openModal()">+ Nuovo Ordine</button>
+
+<!-- MODAL NUOVO ORDINE -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>Nuovo Ordine</h3>
+    <div class="form-group">
+      <label>Cliente / Hotel / Farmacia</label>
+      <input type="text" id="f-cliente" placeholder="es. Sofitel Santa Clara">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Codice PIN</label>
+        <select id="f-pin">
+          <option value="HOT56">HOT56 — Hotel Gold</option>
+          <option value="CHF12">CHF12 — Chef</option>
+          <option value="MED11">MED11 — Medico</option>
+          <option value="CEL14">CEL14 — Celiaco</option>
+          <option value="RIV22">RIV22 — Eduin</option>
+          <option value="RIV22-MED">RIV22-MED — Edwin 2</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Moto consegna</label>
+        <select id="f-moto">
+          <option value="Moto 1">Moto 1</option>
+          <option value="Moto 2">Moto 2</option>
+          <option value="Diretto">Diretto</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Prodotti ordinati</label>
+      <input type="text" id="f-prodotti" placeholder="es. Originale 200g x3, Gold 75g x2">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ora consegna</label>
+        <input type="time" id="f-ora">
+      </div>
+      <div class="form-group">
+        <label>Importo COP</label>
+        <input type="number" id="f-importo" placeholder="0">
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Annulla</button>
+      <button class="btn-save" onclick="saveOrdine()">Salva Ordine</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CLOCK =====
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clock').textContent=now.toLocaleTimeString('it-IT');
+  document.getElementById('date').textContent=now.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+setInterval(updateClock,1000);updateClock();
+
+// ===== DATI DEMO =====
+// ===== ORDINI DAL SISTEMA ORDINI (localStorage condiviso) =====
+function loadOrdiniFromStorage(){
+  try{
+    const stored=JSON.parse(localStorage.getItem('amp_monitor_orders')||'[]');
+    return stored.map(o=>({
+      id:o.id,
+      cliente:o.cliente,
+      pin:o.pin,
+      prodotti:o.items?o.items.map(i=>i.name+' x'+i.qty).join(', '):'—',
+      ora:o.ora||'—',
+      importo:o.total||0,
+      delivery:o.delivery||'Estándar 24h',
+      pagamento:o.pagamento||'—',
+      moto:o.pin&&o.pin.startsWith('HOT')?'Diretto':'Moto 1',
+      status:o.status||'new'
+    }));
+  }catch{return[];}
+}
+
+// Demo ordini se nessun ordine reale
+function getDemoOrdini(){
+  return[
+    {id:'DEMO-001',cliente:'Sofitel Santa Clara',pin:'HOT56-02',prodotti:'Gold 75g x4, Gnocchi La Gold x2',ora:'10:30',importo:60000,delivery:'Express 15min',pagamento:'Bold',moto:'Diretto',status:'ready'},
+    {id:'DEMO-002',cliente:'Dr. Ramirez Garcia',pin:'MED11-01',prodotti:'Originale 200g x3',ora:'11:00',importo:37800,delivery:'Estándar 24h',pagamento:'Nequi',moto:'Moto 1',status:'delivery'},
+    {id:'DEMO-003',cliente:'Chef Martinez',pin:'CHF12-01',prodotti:'Originale 200g x5',ora:'12:00',importo:56000,delivery:'Estándar 24h',pagamento:'Transferencia',moto:'Moto 2',status:'new'},
+  ];
+}
+
+let ordini=[];
+function refreshOrdini(){
+  const real=loadOrdiniFromStorage();
+  ordini=real.length>0?real:getDemoOrdini();
+}
+refreshOrdini();
+
+const produzione=[
+  {id:'LOT-028A',linea:'Gold',linea_col:'tag-gold',peso_inizio:8,peso_attuale:6.2,ora_inizio:'06:15',ora_fine:'10:15',progress:60,operatore:'Giampaolo'},
+  {id:'LOT-028B',linea:'Originale',linea_col:'tag-orig',peso_inizio:8,peso_attuale:7.1,ora_inizio:'07:00',ora_fine:'11:00',progress:35,operatore:'Collaboratrice'},
+];
+
+const essiccazione=[
+  {nome:'Lotto 027A — Originale',ora_inizio:'04:00',temp:21,umidita:53,umidita_pasta:14,ore_rimaste:2.5},
+  {nome:'Lotto 027B — Gold',ora_inizio:'05:30',temp:20,umidita:51,umidita_pasta:11.8,ore_rimaste:0.5},
+];
+
+const magazzino=[
+  {nome:'Farina riso GF',qty:12,unit:'kg',min:5,max:20},
+  {nome:'Maizena',qty:8,unit:'kg',min:3,max:15},
+  {nome:'Fecola patate',qty:4,unit:'kg',min:2,max:10},
+  {nome:'Uova pasteurizzate',qty:120,unit:'pz',min:50,max:200},
+  {nome:'Goma xantana',qty:0.8,unit:'kg',min:0.5,max:2},
+  {nome:'Sacchetti Kraft 75g',qty:340,unit:'pz',min:100,max:500},
+  {nome:'Sacchetti Kraft 200g',qty:180,unit:'pz',min:80,max:300},
+  {nome:'Fascette Originale',qty:200,unit:'pz',min:100,max:400},
+  {nome:'Fascette Gold',qty:85,unit:'pz',min:50,max:200},
+];
+
+// ===== RENDER ORDINI =====
+function renderOrdini(){
+  // Aggiorna ordini dal storage ogni render
+refreshOrdini();
+const statusLabel={new:'Nuovo',prod:'In produzione',ready:'Pronto',delivery:'In consegna'};
+  const statusClass={new:'status-new',prod:'status-prod',ready:'status-ready',delivery:'status-delivery'};
+  const pinColor={HOT56:'tag-gold',CHF12:'tag-orig',MED11:'tag-orig',CEL14:'tag-orig',RIV22:'tag-serenissima','RIV22-MED':'tag-serenissima'};
+  const html=ordini.map(o=>`
+    <div class="ordine${o.status==='new'?' urgent':''}" onclick="cambiaStatus('${o.id}')">
+      <div class="ord-top">
+        <span class="ord-id">${o.id}</span>
+        <span class="ord-time">${o.ora}</span>
+      </div>
+      <div class="ord-cliente">${o.cliente}</div>
+      <div class="ord-items">
+        <span class="ord-tag ${pinColor[o.pin]||'tag-orig'}">${o.pin}</span>
+        <span class="ord-tag tag-orig" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.1);">${o.prodotti}</span>
+      </div>
+      <div class="ord-bottom">
+        <span class="ord-canale">🏍️ ${o.moto} · ${(o.importo/1000).toFixed(0)}k COP · ${o.delivery||'24h'}</span>
+        <span class="ord-status ${statusClass[o.status]}">${statusLabel[o.status]}</span>
+      </div>
+      ${o.pagamento?`<div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:4px;">💳 ${o.pagamento} ${o.delivery&&o.delivery.includes('Express')?'<span style=\"color:#ff6b35;font-weight:700;\">⚡ EXPRESS</span>':''}</div>`:''}
+    </div>`).join('');
+  document.getElementById('ordini-list').innerHTML=html;
+  document.getElementById('ord-count').textContent=ordini.length;
+}
+
+// ===== RENDER PRODUZIONE =====
+function renderProduzione(){
+  const html=produzione.map(l=>`
+    <div class="prod-lotto">
+      <div class="pl-header">
+        <span class="pl-id">${l.id}</span>
+        <span class="ord-tag ${l.linea_col}">${l.linea}</span>
+      </div>
+      <div class="pl-bar"><div class="pl-bar-fill" style="width:${l.progress}%;background:linear-gradient(90deg,var(--g),var(--gold));"></div></div>
+      <div class="pl-stats">
+        <div class="pl-stat"><div class="pl-stat-val" style="color:var(--gold);">${l.progress}%</div><div class="pl-stat-lab">Completato</div></div>
+        <div class="pl-stat"><div class="pl-stat-val" style="color:#4ecf7e;">${l.peso_inizio}kg</div><div class="pl-stat-lab">Impasto</div></div>
+        <div class="pl-stat"><div class="pl-stat-val" style="color:white;">${l.ora_inizio}</div><div class="pl-stat-lab">Inizio</div></div>
+        <div class="pl-stat"><div class="pl-stat-val" style="color:var(--gold);">${l.ora_fine}</div><div class="pl-stat-lab">Fine prevista</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--dim);margin-top:8px;">👤 ${l.operatore}</div>
+    </div>`).join('');
+  document.getElementById('produzione-list').innerHTML=html;
+  document.getElementById('prod-aggiorno').textContent='Aggiornato '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ===== RENDER ESSICCAZIONE =====
+function renderEssic(){
+  const html=essiccazione.map(e=>{
+    const umClass=e.umidita<55?'gauge-ok':e.umidita<65?'gauge-warn':'gauge-bad';
+    const pastaClass=e.umidita_pasta<12?'gauge-ok':e.umidita_pasta<14?'gauge-warn':'gauge-bad';
+    return`<div class="essic-item">
+      <div class="ei-header">
+        <span class="ei-name">${e.nome}</span>
+        <span class="ei-time">${e.ore_rimaste}h rimaste</span>
+      </div>
+      <div class="ei-gauges">
+        <div class="gauge"><div class="gauge-val gauge-ok">${e.temp}°C</div><div class="gauge-lab">Temperatura</div></div>
+        <div class="gauge"><div class="gauge-val ${umClass}">${e.umidita}%</div><div class="gauge-lab">Umidita camera</div></div>
+        <div class="gauge"><div class="gauge-val ${pastaClass}">${e.umidita_pasta}%</div><div class="gauge-lab">Umidita pasta</div></div>
+      </div>
+    </div>`;}).join('');
+  document.getElementById('essic-list').innerHTML=html;
+}
+
+// ===== RENDER MAGAZZINO =====
+function renderMagazzino(){
+  const html=magazzino.map(m=>{
+    const pct=Math.round((m.qty/m.max)*100);
+    const barClass=pct>50?'bar-ok':pct>25?'bar-warn':'bar-crit';
+    const valColor=pct>50?'#4ecf7e':pct>25?'var(--gold)':'#ff6b35';
+    return`<div class="mag-item">
+      <span class="mag-name">${m.nome}</span>
+      <div class="mag-bar-wrap"><div class="mag-bar ${barClass}" style="width:${pct}%;"></div></div>
+      <span class="mag-qty" style="color:${valColor};">${m.qty}${m.unit}</span>
+    </div>`;}).join('');
+  document.getElementById('magazzino-list').innerHTML=html;
+}
+
+// ===== RENDER MOTO =====
+function renderMoto(){
+  const moto=[
+    {num:1,ordini:ordini.filter(o=>o.moto==='Moto 1'),status:'In giro'},
+    {num:2,ordini:ordini.filter(o=>o.moto==='Moto 2'),status:'In deposito'},
+  ];
+  const html=moto.map(m=>`
+    <div class="moto-card">
+      <div class="mc-header">
+        <span class="mc-icon">🏍️</span>
+        <span class="mc-title">Moto ${m.num}</span>
+        <span class="mc-badge" style="background:rgba(26,92,46,.3);color:#4ecf7e;border:1px solid rgba(26,92,46,.4);">${m.status}</span>
+      </div>
+      <div class="mc-items">
+        ${m.ordini.length===0?'<span style="font-size:12px;color:var(--dim);">Nessun ordine assegnato</span>':
+        m.ordini.map(o=>`<div class="mc-item">${o.cliente}<span>${o.ora}</span></div>`).join('')}
+      </div>
+    </div>`).join('');
+  document.getElementById('moto-list').innerHTML=html;
+}
+
+// ===== RENDER CANALI =====
+function renderCanali(){
+  const pins=['HOT56','CHF12','MED11','CEL14','RIV22','RIV22-MED'];
+  const colors={HOT56:'var(--gold)',CHF12:'#4ecf7e',MED11:'#4ecf7e',CEL14:'#4ecf7e',RIV22:'#6ab0ff','RIV22-MED':'#6ab0ff'};
+  const html=pins.map(pin=>{
+    const count=ordini.filter(o=>o.pin===pin).length;
+    return`<div class="canale-item">
+      <div class="ci-pin" style="color:${colors[pin]||'white'};">${pin}</div>
+      <div class="ci-count" style="color:${colors[pin]||'white'};">${count}</div>
+      <div class="ci-label">ordini oggi</div>
+    </div>`;}).join('');
+  document.getElementById('canali-grid').innerHTML=html;
+}
+
+// ===== CAMBIA STATUS =====
+const statusFlow={new:'prod',prod:'ready',ready:'delivery',delivery:'new'};
+function cambiaStatus(id){
+  const ord=ordini.find(o=>o.id===id);
+  if(ord){ord.status=statusFlow[ord.status];renderAll();}
+}
+
+// ===== MODAL =====
+function openModal(){document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function saveOrdine(){
+  const cliente=document.getElementById('f-cliente').value.trim();
+  if(!cliente)return;
+  const newOrd={
+    id:'ORD-'+String(ordini.length+1).padStart(3,'0'),
+    cliente,
+    pin:document.getElementById('f-pin').value,
+    prodotti:document.getElementById('f-prodotti').value||'—',
+    ora:document.getElementById('f-ora').value||'—',
+    importo:parseInt(document.getElementById('f-importo').value)||0,
+    moto:document.getElementById('f-moto').value,
+    status:'new'
+  };
+  ordini.unshift(newOrd);
+  renderAll();closeModal();
+  document.getElementById('f-cliente').value='';
+  document.getElementById('f-prodotti').value='';
+  document.getElementById('f-importo').value='';
+}
+
+// ===== RENDER ALL =====
+function renderProveMonitor(){
+  try{
+    const prove=JSON.parse(localStorage.getItem('amp_prove')||'[]');
+    const now=new Date();
+    const urgenti=prove.filter(p=>{
+      if(p.status!=='aperta')return false;
+      const scad=new Date(p.scadenza);
+      return Math.ceil((scad-now)/(1000*60*60*24))<=3;
+    });
+    const aperte=prove.filter(p=>p.status==='aperta');
+    // Update order count badge with prove info
+    const badge=document.getElementById('ord-count');
+    if(badge&&urgenti.length>0){
+      badge.style.color='#ff6b35';
+      badge.title=urgenti.length+' prove in scadenza!';
+    }
+    // Show prove alert in canali section
+    const canaliEl=document.getElementById('canali-grid');
+    if(canaliEl&&aperte.length>0){
+      const proveHtml=`<div style="grid-column:1/-1;background:rgba(197,163,74,.1);border:1px solid rgba(197,163,74,.3);border-radius:6px;padding:8px 10px;margin-top:4px;">
+        <div style="font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">⏱️ Prove 15gg attive: ${aperte.length}</div>
+        ${urgenti.map(p=>`<div style="font-size:11px;color:#ff6b35;font-weight:600;">⚠️ ${p.pin} — ${p.cliente} — SCADE PRESTO</div>`).join('')}
+        ${aperte.filter(p=>!urgenti.find(u=>u.id===p.id)).map(p=>`<div style="font-size:10px;color:rgba(255,255,255,.5);">${p.pin} — ${p.cliente}</div>`).join('')}
+      </div>`;
+      const existing=canaliEl.querySelector('.prove-alert');
+      if(existing)existing.remove();
+      const div=document.createElement('div');div.className='prove-alert';div.innerHTML=proveHtml;
+      canaliEl.appendChild(div);
+    }
+  }catch(e){}
+}
+
+function renderAll(){renderOrdini();renderProduzione();renderEssic();renderMagazzino();renderMoto();renderCanali();renderProveMonitor();}
+renderAll();
+setInterval(()=>{refreshOrdini();renderAll();},15000);
+// Aggiorna più frequente per ordini nuovi
+setInterval(()=>{
+  const newOrds=loadOrdiniFromStorage();
+  if(newOrds.length!==ordini.filter(o=>o.id.startsWith('DEMO')?false:true).length){
+    refreshOrdini();renderOrdini();renderCanali();renderMoto();
+  }
+},3000);
+
+// Simula progresso produzione
+setInterval(()=>{
+  produzione.forEach(l=>{if(l.progress<100)l.progress+=0.5;});
+  renderProduzione();
+},10000);
+</script>
+</body>
+</html>
